@@ -79,7 +79,7 @@ class PortfolioTracker():
         print()
     
     def view_portfolio(self):
-        print("Symbol\tQty\tTotal Price")
+        print("Symbol\tQty\tPer Price")
         for i in self.portfolio:
             print(f"{i}", end="")
             for j in self.portfolio[i]:
