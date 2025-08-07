@@ -23,6 +23,90 @@ class Database:
         conn.commit()
         conn.close()
 
+    def get_capital(self):
+        conn = self.get_db_connection()
+        c = conn.cursor()
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS capital (
+                id INTEGER PRIMARY KEY,
+                amount REAL NOT NULL
+            )
+        """)
+        # Insert default capital if not exists
+        c.execute("SELECT COUNT(*) FROM capital")
+        if c.fetchone()[0] == 0:
+            c.execute("INSERT INTO capital (id, amount) VALUES (1, 0.0)")
+            conn.commit()
+        
+        # Now fetch and return the current capital
+        c.execute("SELECT amount FROM capital WHERE id = 1")
+        capital = c.fetchone()[0]
+        
+        conn.close()
+        return capital
+    
+    def update_capital(self, amount):
+        try:
+            conn = self.get_db_connection()
+            c = conn.cursor()
+            c.execute("UPDATE capital SET amount = ? WHERE id = 1", (amount,))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(e)
+
+    def set_capital(self):
+        try:
+            current = self.get_capital()
+            print(f"Your current capital: ₹{current:.2f}")
+            
+            new_amount = float(input("Enter your capital amount:\n-> "))
+            
+            if new_amount < 0:
+                print("Capital cannot be negative.")
+                return
+
+            self.update_capital(new_amount)
+            print(f"Capital updated to ₹{new_amount:.2f}")
+
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+
+    def add_capital(self):
+        current = self.get_capital()
+        try: 
+            add_amount = float(input("Enter your capital amount:\n-> "))
+            
+            if add_amount < 0:
+                print("Additional amount cannot be 0")
+                return
+            
+            new_amount = current + add_amount
+
+            self.update_capital(new_amount)
+            print(f"Capital updated to ₹{new_amount:.2f}")
+
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+
+
+    def withdraw_capital(self):
+        current = self.get_capital()
+        try: 
+            withdraw_amount = float(input("Enter your capital amount:\n-> "))
+            
+            if withdraw_amount < 0:
+                print("Additional amount cannot be 0")
+                return
+            
+            new_amount = current - withdraw_amount
+
+            self.update_capital(new_amount)
+            print(f"Capital updated to ₹{new_amount:.2f}")
+
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+
     def insert_stocks(self,symbol, qty, price):
         conn = self.get_db_connection()
         c = conn.cursor()
