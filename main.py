@@ -1,3 +1,4 @@
+import random
 import sys
 import os
 import logging
@@ -28,7 +29,7 @@ class PortfolioTracker():
             now = datetime.now().strftime("%d/%m/%y %H:%M")
             self.transactions.append((now, symbol, qty, price*qty))
             if symbol not in self.portfolio:
-                self.portfolio[symbol] = {"Quantity": qty, "Avg Price": price}
+                self.portfolio[symbol] = {"Quantity": qty, "Avg Price": price, "Current Price": random.uniform(10, 20)}
             else:
                 old_qty = self.portfolio[symbol]["Quantity"]
                 old_price = self.portfolio[symbol]["Avg Price"]
@@ -70,21 +71,35 @@ class PortfolioTracker():
 
         except ValueError:
             print("Invalid input")
-
-
+        
     def view_transactions(self):
-        print("Date\t\tSymbol\tQty\tDr/Cr")
-        for i in self.transactions:
-            print(f"{i[0]}\t{i[1]}\t{i[2]}\t{i[3]}")
-        print()
+        print(f"{'Date':<20}{'Symbol':<12}{'Quantity':>10}{'Dr/Cr':>13}")
+        print("-" * 55)
+        sum = 0
+        total_qty = 0
+        for date, symbol, qty, dr_cr in self.transactions:
+            print(f"{date:<20}{symbol:<12}{qty:>10}{dr_cr:>13.2f}")
+            sum += dr_cr
+            total_qty += qty
+        print("=" * 55)
+        print(f"{total_qty:>42}{sum:>13.2f}")
+        print("-" * 55)
     
     def view_portfolio(self):
-        print("Symbol\tQty\tPer Price")
-        for i in self.portfolio:
-            print(f"{i}", end="")
-            for j in self.portfolio[i]:
-                print(f"\t{self.portfolio[i][j]}", end="")
-            print()
+        print(f"{'Symbol':<10}{'Quantity':>10}{'Avg Price':>15}{'Curr Price':>15}{'P/L':>12}")
+        print("-" * 67)
+        total_pnl = 0
+        for symbol, data in self.portfolio.items():
+            qty = data["Quantity"]
+            avg_price = data["Avg Price"]
+            curr_price = data["Current Price"]
+            stock_pnl = (curr_price - avg_price) * qty
+            total_pnl += stock_pnl
+            print(f"{symbol:<10}{qty:>10}{avg_price:>15.2f}{curr_price:>15.2f}{stock_pnl:>12.2f}")
+        print("=" * 67)
+        print(f"{'Total P/L:':>50}{total_pnl:>12.2f}")
+        print("-" * 67)
+
     
     def run(self):
         while True:
