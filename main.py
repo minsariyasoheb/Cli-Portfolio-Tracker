@@ -1,121 +1,98 @@
 import sys
-import sqlite3
+import os
 import logging
-from app.config import LOG_FILE,DB_FILE,CSV_FILE
+from datetime import datetime
 
-# Formatter setup
-formatter = logging.Formatter(
-    "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt='%d/%m/%y %H:%M'
-)
 
-# File handler for writing logs
-file_handler = logging.FileHandler(LOG_FILE, encoding='utf-8')
-file_handler.setFormatter(formatter)
-
-# Main logger for app-wide use
-main_logger = logging.getLogger("PortfolioTracker")
-main_logger.setLevel(logging.DEBUG)
-main_logger.addHandler(file_handler)
-
-# Modular loggers for specific modules
-loggers = {}
-for name in ["AddStocks", "RemoveStocks", "Database"]:
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(file_handler)
-    loggers[name] = logger
-
-logger = loggers["Database"]
-
-def get_connection():
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        return conn
-    except sqlite3.Error as e:
-        logger.error(f"DB connection failed: {e}")
-        return None
-
-def create_table():
-    conn = get_connection()
-    if conn:
-        try:
-            conn.execute("""CREATE TABLE IF NOT EXISTS portfolio(
-                        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        symbol TEXT NOT NULL UNIQUE,
-                        quantity INTEGER NOT NULL,
-                        price REAL NOT NULL,
-                        )""")
-            conn.commit()
-        except sqlite3.Error as e:
-                logger.error(f"Error creating table: {e}")
-        finally:
-            conn.close()
-
-def insert_buy(symbol, quantity, price):
-    create_table()
-    conn = get_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO portfolio (symbol, quantity, price)
-                VALUES (?, ?, ?)
-            ''', (symbol, quantity, price))
-            conn.commit()
-            logger.info(f"Inserted: {quantity} of {symbol} at ₹{price}")
-        except sqlite3.Error as e:
-            logger.error(f"Error inserting buy: {e}")
-        finally:
-            conn.close()
-
-def sell_stock(symbol, sell_qty, sell_price):
-    pass
-
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 class PortfolioTracker():
+    def __init__(self):
+        self.transactions = []
+        self.portfolio = {}
 
     def menu(self):
-        print()
-        print("="*6+" Portfolio Tracker "+"="*6)
         print("1. Add Stocks")
         print("2. Remove Stocks")
-        print("3. Check portfolio")
+        print("3. View Transactions")
+        print("4. View Portfolio")
+        print("5. Check Past Performance")
         print("0. Exit")
-        print("="*31)
     
     def add_stocks(self):
-        symbol = input("Enter Symbol Name\n-> ").upper()
-        qty = int(input("How much did you buy?\n-> "))
-        if qty == 0:
-            print("invalid input")
-            return
-        price = float(input("What price did you buy?\n-> "))
-        print(f"Bought {qty} shares of {symbol} at ₹{price} each.")
-    
+        symbol = input("Enter symbol name\n-> ").upper()
+        try:
+            qty = int(input("How many did you buy?\n-> "))
+            price = float(input("How much was each stock?\n-> "))
+            now = datetime.now().strftime("%d/%m/%y %H:%M")
+            self.transactions.append((now, symbol, qty, price*qty))
+            if symbol not in self.portfolio:
+                self.portfolio[symbol] = {"Quantity": qty, "Avg Price": price}
+            else:
+                old_qty = self.portfolio[symbol]["Quantity"]
+                old_price = self.portfolio[symbol]["Avg Price"]
+                
+                new_qty = old_qty + qty
+                new_avg_price = ((old_qty * old_price) + (qty * price)) / new_qty
+                
+                self.portfolio[symbol]["Quantity"] = new_qty
+                self.portfolio[symbol]["Avg Price"] = round(new_avg_price, 2)
+        except(ValueError,IndexError):
+            print("Error: invalid input")
+
     def remove_stocks(self):
-        symbol = input("Enter Symbol Name\n-> ").upper()
-        qty = int(input("How much did you sell?\n-> "))
-        if qty == 0:
-            print("invalid input")
+        symbol = input("Which stock (symbol) did you sell?\n-> ").upper()
+        
+        if symbol not in self.portfolio:
+            print("Error: Symbol does not exist")
             return
-        price = float(input("What price did you sell?\n-> "))
-        old_price = 1.0
-        print(f"Sold {qty} shares of {symbol} at ₹{price} each.")
-        pnl = (price * qty) - (old_price * qty)
-        if pnl < 0:
-            print(f"Loss made: {pnl:.2f}")
-        elif pnl == 0:
-            print(f"Stocks were sold at par")
-        elif pnl > 0:
-            print(f"Profit made: {pnl:.2f}")
+
+        try:
+            qty = int(input("How many did you sell?\n-> "))
+            
+            if qty > self.portfolio[symbol]["Quantity"]:
+                print("Error: Selling quantity cannot exceed existing quantity")
+                return
+
+            price = float(input("At what price did you sell each?\n-> "))
+            now = datetime.now().strftime("%d/%m/%y %H:%M")
+            
+            # Log the sell transaction
+            self.transactions.append((now, symbol, -qty, -price * qty))
+
+            # Update portfolio
+            self.portfolio[symbol]["Quantity"] -= qty
+
+            # If all shares sold, remove from portfolio
+            if self.portfolio[symbol]["Quantity"] == 0:
+                del self.portfolio[symbol]
+
+        except ValueError:
+            print("Invalid input")
 
 
+    def view_transactions(self):
+        print("Date\t\tSymbol\tQty\tDr/Cr")
+        for i in self.transactions:
+            print(f"{i[0]}\t{i[1]}\t{i[2]}\t{i[3]}")
+        print()
+    
+    def view_portfolio(self):
+        print("Symbol\tQty\tTotal Price")
+        for i in self.portfolio:
+            print(f"{i}", end="")
+            for j in self.portfolio[i]:
+                print(f"\t{self.portfolio[i][j]}", end="")
+            print()
+    
     def run(self):
         while True:
             self.menu()
-            choice = int(input("Enter Your Choice: "))
+            try:
+                choice = int(input("Enter your choice: "))
+            except(ValueError,IndexError):
+                print("invalid input")
 
             if choice == 0:
                 print("GoodBye!")
@@ -124,7 +101,14 @@ class PortfolioTracker():
                 self.add_stocks()
             elif choice == 2:
                 self.remove_stocks()
-
+            elif choice == 3:
+                clear_screen()
+                self.view_transactions()
+            elif choice == 4:
+                self.view_portfolio()
+            elif choice == 5:
+                pass
+        
 if __name__ == "__main__":
     app = PortfolioTracker()
     app.run()
