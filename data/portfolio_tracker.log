@@ -1,0 +1,43 @@
+08/08/25 13:04 - Capital - DEBUG - Main menu choice entered: 1
+08/08/25 13:04 - Capital - DEBUG - Capital menu choice entered: 4
+08/08/25 13:04 - Database - DEBUG - Opened database connection.
+08/08/25 13:04 - Database - INFO - Initialized capital with ₹0.00
+08/08/25 13:04 - Database - DEBUG - Fetched capital: ₹0.00
+08/08/25 13:04 - Capital - INFO - Viewed capital: ₹0.0
+08/08/25 13:05 - Capital - DEBUG - Main menu choice entered: 1
+08/08/25 13:05 - Capital - DEBUG - Capital menu choice entered: 3
+08/08/25 13:05 - Database - DEBUG - Opened database connection.
+08/08/25 13:05 - Database - DEBUG - Fetched capital: ₹0.00
+08/08/25 13:05 - Capital - INFO - Fetched current capital: ₹0.00
+08/08/25 13:05 - Database - DEBUG - Opened database connection.
+08/08/25 13:05 - Database - INFO - Updated capital to ₹5000.00
+08/08/25 13:05 - Capital - INFO - Capital updated to ₹5000.00
+08/08/25 13:05 - Capital - INFO - Capital set manually
+08/08/25 13:05 - Capital - DEBUG - Main menu choice entered: 2
+08/08/25 13:05 - Capital - DEBUG - Stocks menu choice entered: 1
+08/08/25 13:05 - Database - DEBUG - Opened database connection.
+08/08/25 13:05 - Database - INFO - Checked/created portfolio table.
+08/08/25 13:05 - Database - DEBUG - Opened database connection.
+08/08/25 13:05 - Database - DEBUG - Fetched capital: ₹5000.00
+08/08/25 13:05 - Database - DEBUG - Opened database connection.
+08/08/25 13:05 - Database - INFO - Updated capital to ₹735.00
+08/08/25 13:05 - Buy Stocks - INFO - Purchased 20 x AAPL at ₹213.25. Total: ₹4265.00. Capital left: ₹735.00
+08/08/25 13:05 - Database - DEBUG - Opened database connection.
+08/08/25 13:05 - Portfolio - INFO - Symbol found: AAPL (Qty: 5, Avg Price: ₹213.25)
+08/08/25 13:05 - Database - DEBUG - Opened database connection.
+08/08/25 13:05 - Portfolio - INFO - Updated stock: AAPL -> Quantity: 25, Avg Price: ₹213.25
+08/08/25 13:05 - Buy Stocks - DEBUG - Updated stock 'AAPL': Old Qty: 5, New Qty: 25, Old Avg Price: ₹213.25, New Avg Price: ₹213.25
+08/08/25 13:06 - Capital - DEBUG - Main menu choice entered: 4
+08/08/25 13:06 - Database - DEBUG - Opened database connection.
+08/08/25 13:06 - Portfolio - DEBUG - AAPL -> Qty: 25, Avg: ₹213.25, Curr: ₹17.27, PnL: ₹-4899.55
+08/08/25 13:06 - Portfolio - INFO - Total portfolio P/L: ₹-4899.55
+08/08/25 13:06 - Capital - INFO - Viewed portfolio from main menu
+08/08/25 13:06 - Capital - DEBUG - Main menu choice entered: 0
+08/08/25 13:06 - Capital - INFO - User exited the application
+08/08/25 13:10 - Capital - DEBUG - Main menu choice entered: 4
+08/08/25 13:10 - Database - DEBUG - Opened database connection.
+08/08/25 13:10 - Portfolio - DEBUG - AAPL -> Qty: 25, Avg: ₹213.25, Curr: ₹287.41, PnL: ₹1854.01
+08/08/25 13:10 - Portfolio - INFO - Total portfolio P/L: ₹1854.01
+08/08/25 13:10 - Capital - INFO - Viewed portfolio from main menu
+08/08/25 13:10 - Capital - DEBUG - Main menu choice entered: 0
+08/08/25 13:10 - Capital - INFO - User exited the application
