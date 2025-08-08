@@ -3,15 +3,16 @@ import sys
 import os
 from app.logger import Logger
 from app.database import Database
+from app.transact import Transactions
 from datetime import datetime
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 class PortfolioTracker():
-
     def __init__(self):
         self.capital = 0.0
+        self.transact = Transactions()
 
     def main_menu(self):
         print("\n1. Capital Menu")
@@ -33,6 +34,8 @@ class PortfolioTracker():
         capital = db.get_capital()
 
         logger = Logger.loggers["buy"]
+        logger.debug("Buy stocks menu opened")
+        transact_log = Logger.loggers["transact"]
 
         symbol = input("Enter symbol name\n-> ").upper()
         try:
@@ -62,6 +65,9 @@ class PortfolioTracker():
                 f"Purchased {qty} x {symbol} at ₹{price:.2f}. Total: ₹{total_cost:.2f}. Capital left: ₹{remaining_capital:.2f}"
             )
             print(f"Purchased {qty} x {symbol} at ₹{price:.2f}. Total: ₹{total_cost:.2f}. Capital left: ₹{remaining_capital:.2f}")
+            self.transact.stock_transact("buy", symbol,qty,price,total_cost,remaining_capital,capital)
+            transact_log.info("Transaction Successful")
+
             result = db.check_symbol(symbol)
             if result is False:
                 db.insert_stocks(symbol, qty, price)
@@ -93,6 +99,7 @@ class PortfolioTracker():
         db.create_table()
 
         logger = Logger.loggers["sell"]
+        transact_log = Logger.loggers["transact"]
         logger.debug("Sell stocks menu opened")
 
         symbol = input("Enter symbol name\n-> ").upper()
@@ -137,6 +144,8 @@ class PortfolioTracker():
                 f"after selling {sold_qty} x {symbol} at ₹{sell_price:.2f} (P/L: ₹{profit_or_loss:.2f})"
             )
             print(f"after selling {sold_qty} x {symbol} at ₹{sell_price:.2f} (P/L: ₹{profit_or_loss:.2f})")
+            self.transact.stock_transact("sell", symbol,-sold_qty,-sell_price,-(sell_price*sold_qty),new_capital,capital_before)
+            transact_log.info("Transaction Successful")
         except ValueError:
             print("Invalid input. Please enter valid numbers.")
             logger.error(f"Invalid input while selling '{symbol}'. ValueError occurred.")
@@ -229,6 +238,7 @@ class PortfolioTracker():
 
     def run(self):
         db = Database()
+        transact = Transactions()
         logger = Logger.loggers["capital"]
 
         while True:
@@ -303,8 +313,8 @@ class PortfolioTracker():
 
             elif choice == 3:
                 clear_screen()
-                logger.info("Entered Option 3 (placeholder)")
-                pass
+                transact.view_transactions()
+                logger.info("Viewed Transactions from main menu")
 
             elif choice == 4:
                 clear_screen()

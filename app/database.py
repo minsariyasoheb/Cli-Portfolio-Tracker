@@ -3,10 +3,13 @@ import os
 import random
 from app.config import Config
 from app.logger import Logger
+from app.transact import Transactions
 
 class Database:
     def __init__(self):
         self.logger = Logger.loggers["db"]
+        self.create_table()
+        self.transact = Transactions()
 
     def get_db_connection(self):
         os.makedirs(os.path.dirname(Config.DB_FILE), exist_ok=True)
@@ -89,6 +92,9 @@ class Database:
             self.update_capital(new_amount)
             print(f"Capital updated to ₹{new_amount:.2f}")
             logger.info(f"Capital updated to ₹{new_amount:.2f}")
+            transact_log = Logger.loggers["transact"]
+            self.transact.capital_transact("update",new_amount,current)
+            transact_log.info("Updated Capital")
 
         except ValueError:
             print("Invalid input. Please enter a valid number.")
@@ -113,6 +119,9 @@ class Database:
 
             print(f"Capital updated to ₹{new_amount:.2f}")
             logger.info(f"Capital increased by ₹{add_amount:.2f}, new total: ₹{new_amount:.2f}")
+            transact_log = Logger.loggers["transact"]
+            self.transact.capital_transact("update",new_amount,current)
+            transact_log.info("Updated Capital")
 
         except ValueError:
             print("Invalid input. Please enter a valid number.")
@@ -140,6 +149,9 @@ class Database:
             new_amount = current - withdraw_amount
             logger.info(f"Withdrew ₹{withdraw_amount:.2f}, new capital: ₹{new_amount:.2f}")
             self.update_capital(new_amount)
+            transact_log = Logger.loggers["transact"]
+            self.transact.capital_transact("update",new_amount,current)
+            transact_log.info("Updated Capital")
 
             print(f"Capital updated to ₹{new_amount:.2f}")
 
