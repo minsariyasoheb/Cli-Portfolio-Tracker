@@ -269,7 +269,7 @@ class Database:
 
         for symbol, qty, avg_price in result:
             # Simulated price (replace with API call)
-            curr_price = random.uniform(10, 20)
+            curr_price = random.uniform(avg_price-(avg_price*0.05), avg_price+(avg_price*0.05))
             stock_pnl = (curr_price - avg_price) * qty
             total_pnl += stock_pnl
 
