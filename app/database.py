@@ -286,7 +286,7 @@ class Database:
         if not result:
             logger.info("Portfolio is empty.")
             print("Your portfolio is empty.")
-            return
+            return "empty"
 
         table_data = []
         total_pnl = 0

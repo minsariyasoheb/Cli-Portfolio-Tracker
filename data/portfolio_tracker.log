@@ -68,3 +68,63 @@
 09/08/25 15:01 - Database - DEBUG - Opened database connection.
 09/08/25 15:01 - Database - DEBUG - Fetched capital: ₹43670.00
 09/08/25 15:01 - Capital - INFO - Viewed capital: ₹43670.0
+10/08/25 15:46 - Database - DEBUG - Opened database connection.
+10/08/25 15:46 - Database - INFO - Checked/created portfolio table.
+10/08/25 15:46 - Database - DEBUG - Opened database connection.
+10/08/25 15:46 - Database - INFO - Checked/created portfolio table.
+10/08/25 15:46 - PortfolioTracker - DEBUG - Main menu choice entered: 4
+10/08/25 15:46 - PortfolioTracker - DEBUG - Main menu choice entered: 4
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - Database - INFO - Checked/created portfolio table.
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - Database - INFO - Checked/created portfolio table.
+10/08/25 15:47 - PortfolioTracker - DEBUG - Main menu choice entered: 4
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - PortfolioTracker - INFO - Total portfolio P/L: ₹-228.96
+10/08/25 15:47 - PortfolioTracker - DEBUG - Main menu choice entered: 2
+10/08/25 15:47 - PortfolioTracker - DEBUG - Stocks menu choice entered: 3
+10/08/25 15:47 - Update Stocks - DEBUG - Entered update_stocks with choice: 2
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - PortfolioTracker - INFO - Total portfolio P/L: ₹74.18
+10/08/25 15:47 - Update Stocks - DEBUG - Fetching portfolio for bulk update
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - Update Stocks - WARNING - Invalid update for 'AAPL' → qty=0, price=₹0.0
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - PortfolioTracker - INFO - Total portfolio P/L: ₹162.76
+10/08/25 15:47 - PortfolioTracker - DEBUG - Main menu choice entered: 2
+10/08/25 15:47 - PortfolioTracker - DEBUG - Stocks menu choice entered: 2
+10/08/25 15:47 - Sell Stocks - DEBUG - Sell stocks menu opened
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - PortfolioTracker - INFO - Symbol found: AAPL (Qty: 30, Avg Price: ₹213.00)
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - PortfolioTracker - INFO - Deleted stock: AAPL
+10/08/25 15:47 - Sell Stocks - INFO - Sold all shares of 'AAPL' (30 units at ₹215.00). Removed from portfolio.
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - Database - DEBUG - Fetched capital: ₹43670.00
+10/08/25 15:47 - Database - DEBUG - Opened database connection.
+10/08/25 15:47 - Database - INFO - Updated capital to ₹50120.00
+10/08/25 15:47 - Sell Stocks - DEBUG - Capital updated from ₹43670.00 to ₹50120.00 after selling 30 x AAPL at ₹215.00 (P/L: ₹60.00)
+10/08/25 15:47 - Transaction/CSV - INFO - Transaction Successful
+10/08/25 15:48 - PortfolioTracker - DEBUG - Main menu choice entered: 2
+10/08/25 15:48 - PortfolioTracker - DEBUG - Stocks menu choice entered: 3
+10/08/25 15:48 - Update Stocks - DEBUG - Entered update_stocks with choice: 2
+10/08/25 15:48 - Database - DEBUG - Opened database connection.
+10/08/25 15:48 - PortfolioTracker - INFO - Portfolio is empty.
+10/08/25 15:48 - Update Stocks - DEBUG - Fetching portfolio for bulk update
+10/08/25 15:48 - Database - DEBUG - Opened database connection.
+10/08/25 15:48 - Database - DEBUG - Opened database connection.
+10/08/25 15:48 - PortfolioTracker - INFO - Portfolio is empty.
+10/08/25 15:48 - PortfolioTracker - DEBUG - Main menu choice entered: 0
+10/08/25 15:50 - Database - DEBUG - Opened database connection.
+10/08/25 15:50 - Database - INFO - Checked/created portfolio table.
+10/08/25 15:50 - Database - DEBUG - Opened database connection.
+10/08/25 15:50 - Database - INFO - Checked/created portfolio table.
+10/08/25 15:50 - PortfolioTracker - DEBUG - Main menu choice entered: 2
+10/08/25 15:50 - PortfolioTracker - DEBUG - Stocks menu choice entered: 3
+10/08/25 15:50 - Update Stocks - DEBUG - Entered update_stocks with choice: 2
+10/08/25 15:50 - Database - DEBUG - Opened database connection.
+10/08/25 15:50 - PortfolioTracker - INFO - Portfolio is empty.
+10/08/25 15:50 - Update Stocks - DEBUG - Fetching portfolio for bulk update
+10/08/25 15:50 - Database - DEBUG - Opened database connection.
+10/08/25 15:50 - PortfolioTracker - INFO - Portfolio is empty.
+10/08/25 15:51 - PortfolioTracker - DEBUG - Main menu choice entered: 0

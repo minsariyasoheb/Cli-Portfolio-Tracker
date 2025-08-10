@@ -312,6 +312,8 @@ class PortfolioTracker():
                 print("Your current portfolio:")
                 self.db.view_portfolio()
                 logger.debug("Fetching portfolio for bulk update")
+                if self.db.view_portfolio() == "empty":
+                    return
 
                 conn = self.db.get_db_connection()
                 c = conn.cursor()
@@ -357,6 +359,9 @@ class PortfolioTracker():
                 elif choice == 3:
                     clear_screen()
                     transact.view_transactions()
+                elif choice == 4:
+                    clear_screen()
+                    self.db.view_portfolio()
                 else:
                     clear_screen()
                     self.menu(choice)
