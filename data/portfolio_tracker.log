@@ -61,3 +61,10 @@
 08/08/25 21:21 - Capital - INFO - Viewed portfolio from main menu
 08/08/25 21:21 - Capital - DEBUG - Main menu choice entered: 0
 08/08/25 21:21 - Capital - INFO - User exited the application
+09/08/25 15:00 - Database - DEBUG - Opened database connection.
+09/08/25 15:00 - Database - INFO - Checked/created portfolio table.
+09/08/25 15:01 - Capital - DEBUG - Main menu choice entered: 1
+09/08/25 15:01 - Capital - DEBUG - Capital menu choice entered: 4
+09/08/25 15:01 - Database - DEBUG - Opened database connection.
+09/08/25 15:01 - Database - DEBUG - Fetched capital: ₹43670.00
+09/08/25 15:01 - Capital - INFO - Viewed capital: ₹43670.0

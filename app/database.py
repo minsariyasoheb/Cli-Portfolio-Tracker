@@ -4,12 +4,14 @@ import random
 from app.config import Config
 from app.logger import Logger
 from app.transact import Transactions
+from tabulate import tabulate
 
 class Database:
     def __init__(self):
         self.logger = Logger.loggers["db"]
         self.create_table()
         self.transact = Transactions()
+        
 
     def get_db_connection(self):
         os.makedirs(os.path.dirname(Config.DB_FILE), exist_ok=True)
@@ -79,7 +81,9 @@ class Database:
 
         try:
             current = self.get_capital()
-            print(f"Your current capital: ₹{current:.2f}")
+            capital = self.get_capital()
+            table = [["Current Capital", f"₹{capital}"]]
+            print(tabulate(table, tablefmt="fancy_grid"))
             logger.info(f"Fetched current capital: ₹{current:.2f}")
 
             new_amount = float(input("Enter your capital amount:\n-> "))
@@ -90,7 +94,11 @@ class Database:
                 return
 
             self.update_capital(new_amount)
-            print(f"Capital updated to ₹{new_amount:.2f}")
+
+            headers = ["Old Capital","New Capital"]
+            table = [[f"₹{current:.2f}", f"₹{new_amount:.2f}"]]
+            print(tabulate(table, headers=headers,tablefmt="fancy_grid"))
+
             logger.info(f"Capital updated to ₹{new_amount:.2f}")
             transact_log = Logger.loggers["transact"]
             self.transact.capital_transact("update",new_amount,current)
@@ -107,7 +115,7 @@ class Database:
         logger.info(f"Fetched current capital: ₹{current:.2f}")
 
         try:
-            add_amount = float(input("Enter your capital amount:\n-> "))
+            add_amount = float(input("Enter additional amount:\n-> "))
 
             if add_amount < 0:
                 print("Additional amount cannot be negative.")
@@ -117,7 +125,10 @@ class Database:
             new_amount = current + add_amount
             self.update_capital(new_amount)
 
-            print(f"Capital updated to ₹{new_amount:.2f}")
+            headers = ["Old Capital", "Add Capital", "New Capital"]
+            table = [[f"₹{current:.2f}", f"₹{add_amount:.2f}", f"₹{new_amount:.2f}"]]
+            print(tabulate(table, headers=headers,tablefmt="fancy_grid"))
+
             logger.info(f"Capital increased by ₹{add_amount:.2f}, new total: ₹{new_amount:.2f}")
             transact_log = Logger.loggers["transact"]
             self.transact.capital_transact("update",new_amount,current)
@@ -153,14 +164,17 @@ class Database:
             self.transact.capital_transact("update",new_amount,current)
             transact_log.info("Updated Capital")
 
-            print(f"Capital updated to ₹{new_amount:.2f}")
+
+            headers = ["Old Capital", "Withdrawn Capital", "New Capital"]
+            table = [[f"₹{current:.2f}", f"₹{withdraw_amount:.2f}", f"₹{new_amount:.2f}"]]
+            print(tabulate(table, headers=headers,tablefmt="fancy_grid"))
 
         except ValueError:
             print("Invalid input. Please enter a valid number.")
             logger.error("Invalid input for withdraw_capital (non-numeric).")
 
     def insert_stocks(self, symbol, qty, price):
-        logger = Logger.loggers["portfolio"]
+        logger = Logger.loggers["main"]
         conn = self.get_db_connection()
         c = conn.cursor()
 
@@ -181,7 +195,7 @@ class Database:
             conn.close()
 
     def update_stocks(self, symbol, qty, price):
-        logger = Logger.loggers["portfolio"]
+        logger = Logger.loggers["main"]
         conn = self.get_db_connection()
         c = conn.cursor()
 
@@ -210,7 +224,7 @@ class Database:
             conn.close()
 
     def delete_stock(self, symbol):
-        logger = Logger.loggers["portfolio"]
+        logger = Logger.loggers["main"]
         conn = self.get_db_connection()
         c = conn.cursor()
 
@@ -232,7 +246,7 @@ class Database:
             conn.close()
 
     def check_symbol(self, symbol):
-        logger = Logger.loggers["portfolio"]
+        logger = Logger.loggers["main"]
         conn = self.get_db_connection()
         c = conn.cursor()
         symbol = symbol.upper()
@@ -255,7 +269,7 @@ class Database:
             conn.close()
   
     def view_portfolio(self):
-        logger = Logger.loggers["portfolio"]
+        logger = Logger.loggers["main"]
         conn = self.get_db_connection()
         c = conn.cursor()
 
@@ -274,28 +288,46 @@ class Database:
             print("Your portfolio is empty.")
             return
 
-        print(f"\n{'Symbol':<10}{'Quantity':>10}{'Avg Price (₹)':>18}{'Curr Price (₹)':>18}{'P/L (₹)':>15}")
-        print("-" * 75)
-
+        table_data = []
         total_pnl = 0
 
         for symbol, qty, avg_price in result:
             # Simulated price (replace with API call)
-            curr_price = random.uniform(avg_price-(avg_price*0.05), avg_price+(avg_price*0.05))
+            curr_price = random.uniform(avg_price - (avg_price * 0.05), avg_price + (avg_price * 0.05))
             stock_pnl = (curr_price - avg_price) * qty
             total_pnl += stock_pnl
 
-            print(f"{symbol:<10}{qty:>10}{avg_price:>18.2f}{curr_price:>18.2f}{stock_pnl:>15.2f}")
-            logger.debug(f"{symbol} -> Qty: {qty}, Avg: ₹{avg_price:.2f}, Curr: ₹{curr_price:.2f}, PnL: ₹{stock_pnl:.2f}")
+            table_data.append([
+                symbol,
+                qty,
+                f"{avg_price:.2f}",
+                f"{curr_price:.2f}",
+                f"{stock_pnl:.2f}"
+            ])
 
-        print("=" * 75)
-        print(f"{'Total P/L:':>56}{total_pnl:>15.2f}")
-        print("-" * 75)
+        # Add total row
+        table_data.append(["TOTAL", "", "", "", f"{total_pnl:.2f}"])
+
+        headers = ["Symbol", "Quantity", "Avg Price (₹)", "Curr Price (₹)", "P/L (₹)"]
+        table_str = tabulate(table_data, headers=headers, tablefmt="fancy_grid")
+
+        # Find width of the table from the first line
+        table_width = len(table_str.split("\n")[0])
+
+        # Create merged header box
+        top_border = "╒" + "═" * (table_width - 2) + "╕"
+        title = "PORTFOLIO".center(table_width - 2)
+        title_line = f"│{title}│"
+
+        # Print final output
+        print(top_border)
+        print(title_line)
+        print(table_str)
 
         logger.info(f"Total portfolio P/L: ₹{total_pnl:.2f}")
 
     def total_invested(self):
-        logger = Logger.loggers["portfolio"]  # Use appropriate logger name
+        logger = Logger.loggers["main"]  # Use appropriate logger name
         conn = self.get_db_connection()
         c = conn.cursor()
 

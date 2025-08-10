@@ -4,6 +4,7 @@ import os
 from app.logger import Logger
 from app.database import Database
 from app.transact import Transactions
+from tabulate import tabulate
 from datetime import datetime
 
 def clear_screen():
@@ -11,33 +12,138 @@ def clear_screen():
 
 class PortfolioTracker():
     def __init__(self):
-        self.capital = 0.0
         self.transact = Transactions()
+        self.db = Database()
+        self.db.create_table()
 
-    def main_menu(self):
-        print("\n1. Capital Menu")
-        print("2. Stocks Menu")
-        print("3. View Transactions")
-        print("4. View Portfolio")
-        print("0. Exit")
+    def menu(self, num):    # All Menus
+        def default(menu_items, header):    # Defaults for all menus
+            headers = ["Option", header]
+            table_str = tabulate(menu_items, headers=headers, tablefmt="rounded_grid")
+            return table_str
 
-    def stocks_menu(self):
-        clear_screen()
-        print("1. Buy Stocks")
-        print("2. Sell Stocks")
-        print("3. Update Stock Details")
-        print("0. Return to Main Menu")
-    
+        def main(): # Main menu
+            header = "Main Menu"
+            menu_items = [
+                ["1", "Capital Menu"],
+                ["2", "Stocks Menu"],
+                ["3", "View Transactions"],
+                ["4", "View Portfolio"],
+                ["0", "Exit"]
+            ]
+            print(default(menu_items, header))
+
+        def capital():  # Capital Menu
+            clear_screen()
+            logger = Logger.loggers["main"]
+            header = "Capital Menu"
+            menu_items = [
+                ["1", "View Current Capital"],
+                ["2", "Add Capital"],
+                ["3", "Withdraw Capital"],
+                ["4", "Set Capital Manually"],
+                ["0", "Return to Main Menu"]
+            ]
+            print(default(menu_items, header))
+            try:
+                choice = int(input("Enter your choice: "))
+                logger.debug(f"Capital menu choice entered: {choice}")
+                if choice == 0:
+                    clear_screen()
+                    return
+                elif choice == 1:
+                    clear_screen()
+                    capital = self.db.get_capital()
+                    table = [["Current Capital", f"₹{capital}"]]
+                    print(tabulate(table, tablefmt="fancy_grid"))
+                    logger.info(f"Viewed capital: ₹{capital}")
+                elif choice == 2:
+                    clear_screen()
+                    self.db.add_capital()
+                    logger.info("Capital Added")
+                
+                elif choice == 3:
+                    clear_screen()
+                    self.db.withdraw_capital()
+                    logger.info("Capital Withdrawn")
+
+                elif choice == 4:
+                    clear_screen()
+                    self.db.set_capital()
+                    logger.info("Capital Withdrawn")
+
+                else:
+                    clear_screen()
+                    print("Invalid input")
+                    return
+            except (ValueError, IndexError):
+                clear_screen()
+                print("Invalid input")
+                logger.warning("Non-numeric or out-of-range input at main menu")
+                return
+
+        def stocks():   # Stocks Menu
+            clear_screen()
+            logger = Logger.loggers["main"]
+            header = "Stocks Menu"
+            menu_items = [
+                ["1", "Buy Stocks"],
+                ["2", "Sell Stocks"],
+                ["3", "Update Stock Details"],
+                ["0", "Return to Main Menu"]
+            ]
+            print(default(menu_items, header))
+            try:
+                choice = int(input("Enter your choice: "))
+                logger.debug(f"Stocks menu choice entered: {choice}")
+                if choice == 0:
+                    clear_screen()
+                    return
+                elif choice == 1:
+                    clear_screen()
+                    self.buy_stocks()
+                elif choice == 2:
+                    clear_screen()
+                    self.sell_stocks()
+                elif choice == 3:
+                    clear_screen()
+                    logger = Logger.loggers["main"]
+                    header = "Update Stocks Menu"
+                    menu_items = [
+                        ["1", "Add Multiple Stocks"],
+                        ["2", "Update All Stocks"],
+                        ["0", "Return to Main Menu"]
+                    ]
+                    print(default(menu_items, header))
+                    self.update_stocks()
+                else:
+                    clear_screen()
+                    print("Idk what number was that but that is not available rn")
+                    return
+            except (ValueError, IndexError):
+                clear_screen()
+                print("Invalid input")
+                logger.warning("Non-numeric or out-of-range input at main menu")
+                return
+
+        if num == 0:
+            main()
+        elif num == 1:
+            capital()
+        elif num == 2:
+            stocks()
+        else:
+            clear_screen()
+            print("Idk what number was that but that is not available rn")
+            return
+        
     def buy_stocks(self):
-        db = Database()
-        db.create_table()
-        capital = db.get_capital()
+        capital = self.db.get_capital()
 
         logger = Logger.loggers["buy"]
         logger.debug("Buy stocks menu opened")
         transact_log = Logger.loggers["transact"]
-
-        symbol = input("Enter symbol name\n-> ").upper()
+        symbol = input("Enter symbol name you want to buy (e.g. APPL for Apple, GOOG for Google etc.)\n-> ").upper()
         try:
             qty = int(input("How many did you buy?\n-> "))
             if qty <= 0:
@@ -60,17 +166,25 @@ class PortfolioTracker():
                 return
 
             remaining_capital = capital - total_cost
-            db.update_capital(remaining_capital)
+            self.db.update_capital(remaining_capital)
             logger.info(
                 f"Purchased {qty} x {symbol} at ₹{price:.2f}. Total: ₹{total_cost:.2f}. Capital left: ₹{remaining_capital:.2f}"
             )
-            print(f"Purchased {qty} x {symbol} at ₹{price:.2f}. Total: ₹{total_cost:.2f}. Capital left: ₹{remaining_capital:.2f}")
-            self.transact.stock_transact("buy", symbol,qty,price,total_cost,remaining_capital,capital)
+            data = [
+                ["Symbol", symbol],
+                ["Quantity", qty],
+                ["Price", f"₹{price:.2f}"],
+                ["Total Cost", f"₹{total_cost:.2f}"],
+                ["Capital Left", f"₹{remaining_capital:.2f}"]
+            ]
+
+            print(tabulate(data, headers=["Detail", "Value"], tablefmt="fancy_grid"))
+            self.transact.stock_transact("BUY", symbol,qty,price,total_cost,remaining_capital,capital)
             transact_log.info("Transaction Successful")
 
-            result = db.check_symbol(symbol)
+            result = self.db.check_symbol(symbol)
             if result is False:
-                db.insert_stocks(symbol, qty, price)
+                self.db.insert_stocks(symbol, qty, price)
                 logger.debug(f"Inserted new stock '{symbol}' into portfolio: {qty} shares at ₹{price:.2f}")
             else:
                 # Symbol already exists, update quantity and average price
@@ -80,7 +194,7 @@ class PortfolioTracker():
                 new_avg_price = ((old_qty * old_price) + (qty * price)) / new_qty
                 new_avg_price = round(new_avg_price, 2)
 
-                db.update_stocks(symbol, new_qty, new_avg_price)
+                self.db.update_stocks(symbol, new_qty, new_avg_price)
                 logger.debug(
                     f"Updated stock '{symbol}': Old Qty: {old_qty}, New Qty: {new_qty}, "
                     f"Old Avg Price: ₹{old_price:.2f}, New Avg Price: ₹{new_avg_price:.2f}"
@@ -93,17 +207,14 @@ class PortfolioTracker():
         except Exception as e:
             print("Error:", e)
             logger.exception(f"Unexpected error occurred while buying stock '{symbol}': {e}")
-    
-    def sell_stocks(self):
-        db = Database()
-        db.create_table()
 
+    def sell_stocks(self):
         logger = Logger.loggers["sell"]
         transact_log = Logger.loggers["transact"]
         logger.debug("Sell stocks menu opened")
 
         symbol = input("Enter symbol name\n-> ").upper()
-        result = db.check_symbol(symbol)
+        result = self.db.check_symbol(symbol)
 
         if result is False:
             print("Error: Symbol does not exist")
@@ -130,20 +241,28 @@ class PortfolioTracker():
             profit_or_loss = (sell_price - price) * sold_qty
 
             if remaining_qty == 0:
-                db.delete_stock(symbol)
+                self.db.delete_stock(symbol)
                 logger.info(f"Sold all shares of '{symbol}' ({sold_qty} units at ₹{sell_price:.2f}). Removed from portfolio.")
             else:
-                db.update_stocks(symbol, remaining_qty, price)
+                self.db.update_stocks(symbol, remaining_qty, price)
                 logger.info(f"Sold {sold_qty} of '{symbol}' at ₹{sell_price:.2f}. Remaining: {remaining_qty} shares.")
 
-            capital_before = db.get_capital()
+            capital_before = self.db.get_capital()
             new_capital = capital_before + (sell_price * sold_qty)
-            db.update_capital(new_capital)
+            self.db.update_capital(new_capital)
             logger.debug(
                 f"Capital updated from ₹{capital_before:.2f} to ₹{new_capital:.2f} "
                 f"after selling {sold_qty} x {symbol} at ₹{sell_price:.2f} (P/L: ₹{profit_or_loss:.2f})"
             )
-            print(f"after selling {sold_qty} x {symbol} at ₹{sell_price:.2f} (P/L: ₹{profit_or_loss:.2f})")
+            
+            data = [[symbol, sold_qty, f"{sell_price:.2f}", f"{profit_or_loss:.2f}"]]
+
+            print(tabulate(
+                data,
+                headers=["Symbol", "Qty Sold", "Sell Price (₹)", "P/L (₹)"],
+                tablefmt="fancy_grid"
+            ))
+
             self.transact.stock_transact("sell", symbol,-sold_qty,-sell_price,-(sell_price*sold_qty),new_capital,capital_before)
             transact_log.info("Transaction Successful")
         except ValueError:
@@ -155,19 +274,14 @@ class PortfolioTracker():
             logger.exception(f"Unexpected error occurred while selling stock '{symbol}': {e}")
 
     def update_stocks(self):
-        db = Database()
-        db.create_table()
         logger = Logger.loggers["update"]
 
         try:
-            clear_screen()
-            print("1. Add Multiple Stocks")
-            print("2. Update All Stocks")
-            print("0. Exit")
             choice = int(input("\n-> "))
             logger.debug(f"Entered update_stocks with choice: {choice}")
 
             if choice == 0:
+                clear_screen()
                 logger.info("Exited stock update menu")
                 return
 
@@ -188,18 +302,18 @@ class PortfolioTracker():
                         print("Error: Price must be > 0.")
                         logger.warning(f"Attempted to add '{symbol}' with non-positive price: ₹{price}")
                         return
-                    db.insert_stocks(symbol, qty, price)
+                    self.db.insert_stocks(symbol, qty, price)
                     logger.info(f"Added stock '{symbol}' with qty={qty}, price=₹{price:.2f}")
                 print("Your new portfolio:")
-                db.view_portfolio()
+                self.db.view_portfolio()
 
             elif choice == 2:
                 clear_screen()
                 print("Your current portfolio:")
-                db.view_portfolio()
+                self.db.view_portfolio()
                 logger.debug("Fetching portfolio for bulk update")
 
-                conn = db.get_db_connection()
+                conn = self.db.get_db_connection()
                 c = conn.cursor()
                 c.execute("SELECT symbol FROM portfolio")
                 result = c.fetchall()
@@ -216,10 +330,10 @@ class PortfolioTracker():
                         logger.warning(f"Invalid update for '{symbol}' → qty={new_qty}, price=₹{new_price}")
                         continue
 
-                    db.update_stocks(symbol, new_qty, new_price)
+                    self.db.update_stocks(symbol, new_qty, new_price)
                     logger.info(f"Updated stock '{symbol}' → qty={new_qty}, avg_price=₹{new_price:.2f}")
                 print("Your new portfolio:")
-                db.view_portfolio()
+                self.db.view_portfolio()
 
         except ValueError:
             print("Invalid input. Please enter numeric values.")
@@ -228,99 +342,27 @@ class PortfolioTracker():
             print("Unexpected error:", e)
             logger.exception(f"Exception in update_stocks(): {e}")
 
-    def capital_menu(self):
-        clear_screen()
-        print("1. Add Capital")
-        print("2. Withdraw Capital")
-        print("3. Set Capital Manually")
-        print("4. View Current Capital")
-        print("0. Return to Main Menu")
 
     def run(self):
-        db = Database()
+        logger = Logger.loggers["main"]
         transact = Transactions()
-        logger = Logger.loggers["capital"]
-
         while True:
-            self.main_menu()
+            self.menu(0)
             try:
                 choice = int(input("Enter your choice: "))
                 logger.debug(f"Main menu choice entered: {choice}")
+                if choice == 0:
+                    print("Goodbye!")
+                    sys.exit()
+                elif choice == 3:
+                    clear_screen()
+                    transact.view_transactions()
+                else:
+                    clear_screen()
+                    self.menu(choice)
+
             except (ValueError, IndexError):
+                clear_screen()
                 print("Invalid input")
                 logger.warning("Non-numeric or out-of-range input at main menu")
                 continue
-
-            if choice == 0:
-                print("Goodbye!")
-                logger.info("User exited the application")
-                sys.exit()
-
-            elif choice == 1:
-                clear_screen()
-                self.capital_menu()
-                try:
-                    choice = int(input("Enter your choice: "))
-                    logger.debug(f"Capital menu choice entered: {choice}")
-
-                    if choice == 0:
-                        logger.info("Returned to main menu from capital menu")
-                        continue
-                    elif choice == 1:
-                        db.add_capital()
-                        logger.info("Capital added")
-                    elif choice == 2:
-                        db.withdraw_capital()
-                        logger.info("Capital withdrawn")
-                    elif choice == 3:
-                        db.set_capital()
-                        logger.info("Capital set manually")
-                    elif choice == 4:
-                        capital = db.get_capital()
-                        print(f"Your current capital: ₹{capital}")
-                        logger.info(f"Viewed capital: ₹{capital}")
-                    else:
-                        print("Invalid choice")
-                        logger.warning(f"Invalid capital menu choice: {choice}")
-
-                except (ValueError, IndexError):
-                    print("Invalid input")
-                    logger.warning("Non-numeric or out-of-range input in capital menu")
-
-            elif choice == 2:
-                clear_screen()
-                self.stocks_menu()
-                try:
-                    choice = int(input("Enter your choice: "))
-                    logger.debug(f"Stocks menu choice entered: {choice}")
-
-                    if choice == 0:
-                        logger.info("Returned to main menu from stocks menu")
-                        continue
-                    elif choice == 1:
-                        self.buy_stocks()
-                    elif choice == 2:
-                        self.sell_stocks()
-                    elif choice == 3:
-                        self.update_stocks()
-                    else:
-                        print("Invalid choice")
-                        logger.warning(f"Invalid stocks menu choice: {choice}")
-
-                except (ValueError, IndexError):
-                    print("Invalid input")
-                    logger.warning("Non-numeric or out-of-range input in stocks menu")
-
-            elif choice == 3:
-                clear_screen()
-                transact.view_transactions()
-                logger.info("Viewed Transactions from main menu")
-
-            elif choice == 4:
-                clear_screen()
-                db.view_portfolio()
-                logger.info("Viewed portfolio from main menu")
-
-            else:
-                print("Invalid choice")
-                logger.warning(f"Invalid main menu choice: {choice}")

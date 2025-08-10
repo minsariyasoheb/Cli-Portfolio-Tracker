@@ -1,8 +1,9 @@
 import os
 import csv
-from datetime import datetime
 from app.config import Config
 from app.logger import Logger
+from tabulate import tabulate
+from datetime import datetime
 
 class Transactions:
     def __init__(self):
@@ -64,18 +65,33 @@ class Transactions:
     def view_transactions(self):
         transact_log = Logger.loggers["transact"]
 
-        with open(self.file, mode="r", newline="") as file:
-            reader = csv.DictReader(file)
-            rows = list(reader)  # Read all rows into memory
+        try:
+            with open(self.file, mode="r", newline="") as file:
+                reader = csv.DictReader(file)
+                rows = list(reader)  # Read all rows into memory
 
-            if not rows:
-                print("Error: You do not have any Transactions")
-                transact_log.warning("No transactions in the file")
-                return
+                if not rows:
+                    print("Error: You do not have any Transactions")
+                    transact_log.warning("No transactions in the file")
+                    return
 
-            print("\n--- Transaction History ---")
-            for row in rows:
-                print("\n", end="")
-                for field in self.fieldnames:
-                    print(row.get(field, ""), end=" ")
-            print("\n----------------------------")
+                # Create the table
+                table_str = tabulate(rows, headers="keys", tablefmt="fancy_grid")
+
+                # Find table width from first line
+                table_width = len(table_str.split("\n")[0])
+
+                # Create merged header box
+                top_border = "╒" + "═" * (table_width - 2) + "╕"
+                title = "TRANSACTION HISTORY".center(table_width - 2)
+                title_line = f"│{title}│"
+
+                # Print final table with title
+                print(top_border)
+                print(title_line)
+                print(table_str)
+
+                action = input("\n\nThere's no export available yet, just type 'n' for now, update will be available soon\nDo You want to export? (y/n)")
+        except FileNotFoundError:
+            print(f"Error: File '{self.file}' not found.")
+            transact_log.error(f"Transaction file '{self.file}' not found.")
